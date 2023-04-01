@@ -449,7 +449,10 @@ ndpi_process_packet(struct nf_conn * ct, const uint64_t time,
 		}
 	}
 
-        do_gettimeofday(&tv);
+        struct timespec64 ts;
+        ktime_get_real_ts64(&ts);
+        tv.tv_sec = ts.tv_sec;
+        tv.tv_usec = ts.tv_nsec / NSEC_PER_USEC;
         t1 = (uint64_t) tv.tv_sec;
 
         if (flow == NULL) {
@@ -628,7 +631,7 @@ ndpi_mt(const struct sk_buff *skb, struct xt_action_param *par)
 
 		return false;
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,0,0)
-	} else if (nf_ct_is_untracked(skb)){
+	} else if (nf_ct_is_unconfirmed(skb)){
 #else
 	} else if (nf_ct_is_unconfirmed(ct)){
 #endif
@@ -641,7 +644,10 @@ ndpi_mt(const struct sk_buff *skb, struct xt_action_param *par)
         ip = ip_hdr(skb_use);
         tcph = (const void *)ip + ip_hdrlen(skb_use);
 
-	do_gettimeofday(&tv);
+    struct timespec64 ts;
+    ktime_get_real_ts64(&ts);
+    tv.tv_sec = ts.tv_sec;
+    tv.tv_usec = ts.tv_nsec / NSEC_PER_USEC;
 	time = ((uint64_t) tv.tv_sec) * detection_tick_resolution +
 		tv.tv_usec / (1000000 / detection_tick_resolution);
 
