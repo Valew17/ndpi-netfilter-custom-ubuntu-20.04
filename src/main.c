@@ -383,9 +383,9 @@ static void ndpi_gc_flow(void)
 	union nf_inet_addr *ipdst;
 
         u64 t1;
-        struct timeval tv;
+        struct timespec64 ts;
 
-        ktime_get_real_ts64(&tv);
+        ktime_get_real_ts64(&ts);
         t1 = (uint64_t) tv.tv_sec;
         
 	if (debug_dpi) pr_info ("xt_ndpi: call garbage collector.\n");
@@ -631,9 +631,9 @@ ndpi_mt(const struct sk_buff *skb, struct xt_action_param *par)
 
 		return false;
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,0,0)
-	} else if (nf_ct_is_unconfirmed(skb)){
+	} else if (nf_ct_is_confirmed(skb)){
 #else
-	} else if (nf_ct_is_unconfirmed(ct)){
+	} else if (nf_ct_is_confirmed(ct)){
 #endif
 		pr_info ("xt_ndpi: ignoring untracked sk_buff.\n");
 		return false;               
